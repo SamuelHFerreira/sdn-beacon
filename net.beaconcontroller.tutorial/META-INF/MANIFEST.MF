@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Beacon Tutorial
+Bundle-SymbolicName: net.beaconcontroller.tutorial
+Bundle-Version: 1.0.2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: net.beaconcontroller.core,
+ net.beaconcontroller.core.io,
+ net.beaconcontroller.packet,
+ net.beaconcontroller.util,
+ org.openflow.io,
+ org.openflow.protocol,
+ org.openflow.protocol.action,
+ org.openflow.protocol.factory,
+ org.openflow.util,
+ org.slf4j

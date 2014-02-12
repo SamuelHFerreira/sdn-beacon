@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: net.beaconcontroller.dependablecontroller
+Bundle-SymbolicName: net.beaconcontroller.dependablecontroller
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: net.beaconcontroller.core,
+ org.openflow.protocol;version="1.0.2",
+ org.openflow.util;version="1.0.2",
+ org.slf4j
