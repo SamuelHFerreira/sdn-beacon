@@ -7,23 +7,21 @@ import java.util.Properties;
 
 import br.ufsc.das.client.DepSpaceAccessor;
 import br.ufsc.das.client.DepSpaceAdmin;
-import br.ufsc.das.general.DepSpaceException;
 import br.ufsc.das.general.DepTuple;
 
 public class DepspaceAcess {
 	private boolean createSpace;
 	private int executions;
-	private String myName = "Controller"; 
+	private String myName; 
 	private DepSpaceAccessor accessor;
 	
 	
-    public DepspaceAcess(int exec, boolean createSpace) {
+    public DepspaceAcess(int exec, boolean createSpace, String myName) {
         this.executions = exec;
         this.createSpace = createSpace;
         
-        myName = "Controller";
         Properties prop = new Properties();
-         
+        this.myName = myName; 
         prop.put(DPS_NAME,myName);
         //use confidentiality?
         //prop.put(DPS_CONFIDEALITY,"true");
@@ -36,7 +34,7 @@ public class DepspaceAcess {
             }else{
 				accessor = new DepSpaceAdmin().createAccessor(prop);
             }
-        } catch (DepSpaceException e) {
+        } catch (Exception e) {
 			e.printStackTrace();
         }
     }
@@ -50,11 +48,12 @@ public class DepspaceAcess {
 	    	accessor.cas(template, dt, transId);
 	        System.out.println("OUT ready.");
 			pause();
-		} catch (DepSpaceException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
     	return inserted;
     }
+    
     public void outOperation(int chave) {
 	    try{
 	    	int transId = accessor.openTransaction(0,9000);
@@ -63,7 +62,7 @@ public class DepspaceAcess {
 	    	accessor.out(dt, transId);
 	        System.out.println("OUT ready.");
 	        pause();
-	    } catch (DepSpaceException e) {
+	    } catch (Exception e) {
 			e.printStackTrace();
 		}
     }

@@ -4,9 +4,9 @@ set -ex
 
 # You must have exported ECLIPSE_HOME for this to work, ie:
 # export ECLIPSE_HOME=/home/username/eclipse
-BASEDIR=`pwd`
+BASEDIR=pwd
 
-rm -rfd temp
+rm -rf temp
 mkdir -p temp/plugins
 mv plugins/* temp/plugins/
 java -jar $ECLIPSE_HOME/plugins/org.eclipse.equinox.launcher_*.jar \
@@ -15,4 +15,4 @@ java -jar $ECLIPSE_HOME/plugins/org.eclipse.equinox.launcher_*.jar \
    -artifactRepository file://$BASEDIR \
    -source $BASEDIR/temp \
    -publishArtifacts
-rm -rfd temp
+rm -rf temp
