@@ -1,7 +1,7 @@
 package net.beaconcontroller.dependablecontroller;
 
 import static br.ufsc.das.util.TSUtil.DPS_NAME;
-import static br.ufsc.das.util.TSUtil.DPS_SUPPORT_TRANSACTION;
+import static br.ufsc.das.util.TSUtil.CONFIG_HOME;
 
 import java.util.Properties;
 
@@ -9,123 +9,60 @@ import br.ufsc.das.client.DepSpaceAccessor;
 import br.ufsc.das.client.DepSpaceAdmin;
 import br.ufsc.das.general.DepTuple;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DepspaceAcess {
-	private boolean createSpace;
 	private int executions;
-	private String myName; 
-	private DepSpaceAccessor accessor;
-	
-	
-    public DepspaceAcess(int exec, boolean createSpace, String myName) {
+    private boolean createSpace;
+    private static Logger log = LoggerFactory.getLogger(DController.class);
+
+
+    /** Creates a new instance of ClientTest */
+    public DepspaceAcess(int exec, boolean createSpace) {
         this.executions = exec;
         this.createSpace = createSpace;
-        
-        Properties prop = new Properties();
-        this.myName = myName; 
-        prop.put(DPS_NAME,myName);
-        //use confidentiality?
-        //prop.put(DPS_CONFIDEALITY,"true");
-        prop.put(DPS_SUPPORT_TRANSACTION,"true");
+    }
+    
 
-        //the DepSpace Accessor, who will access the DepSpace.
-        try {
-        	if(this.createSpace){
-        		accessor = new DepSpaceAdmin().createSpace(prop);
+    public void run(){
+        try{
+            String name = "Demo Space";
+            Properties prop = new Properties();
+            //setting config home.
+            prop.put(CONFIG_HOME,"/media/Arquivos principais/Meus DOCS/Facul/9º período/TCC2/WorkspaceLinux/beacon-tutorial-1.0.2/src/beacon-1.0.2/net.beaconcontroller.dependablecontroller/config");
+             
+            //the Interceptor
+            //String loader = "br.ufsc.das.demo.InterceptorLoaderDemo";
+            //prop.put(DPS_CLIENT_INTERCEPTOR_LOADER,loader);
+            //prop.put(DPS_SERVER_INTERCEPTOR_LOADER,loader);
+
+            //the DepSpace name
+            prop.put(DPS_NAME,name);
+            //use confidentiality?
+            //prop.put(DPS_CONFIDEALITY,"true");
+
+            //the DepSpace Accessor, who will access the DepSpace.
+            DepSpaceAccessor accessor = null;
+            if(this.createSpace){
+            	DepSpaceAdmin admin = new DepSpaceAdmin();
+            	accessor = admin.createSpace(prop);
             }else{
-				accessor = new DepSpaceAdmin().createAccessor(prop);
+                accessor = new DepSpaceAdmin().createAccessor(prop);
             }
-        } catch (Exception e) {
-			e.printStackTrace();
-        }
-    }
-    
-    public boolean casOperation(int chave) {
-    	boolean inserted = false;
-    	try {
-			int transId = accessor.openTransaction(0,9000);
-			DepTuple dt = createTuple(chave, "valorCmp1","valorCmp2","valorCmp3");
-			DepTuple template = DepTuple.createTuple(chave,"*","*","*");
-	    	accessor.cas(template, dt, transId);
-	        System.out.println("OUT ready.");
-			pause();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    	return inserted;
-    }
-    
-    public void outOperation(int chave) {
-	    try{
-	    	int transId = accessor.openTransaction(0,9000);
-	    	DepTuple dt = createTuple(chave, "valorCmp1","valorCmp2","valorCmp3");
-	    	
-	    	accessor.out(dt, transId);
-	        System.out.println("OUT ready.");
-	        pause();
-	    } catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
-    
-    public DepTuple createTuple(int i, String... fields) {
-    	return DepTuple.createTuple(i,fields);
-    }
-	
-	public DepTuple get(int i){
-        return DepTuple.createTuple(i,"confidentiality","eu sou o cliente","BUMMMM!!!");
-	}
-	
-	public void mainSpace() {
-		  try{
-//	            access(accessor);
 
-	            /*if(this.createSpace){
-	                // this will delete the DepSpace
-	                accessor.finalize();
-	            }*/
-	            System.out.println("THE END!!!");
-	        }catch(Exception e){
-	            e.printStackTrace();
-	        }
-	}
-	
-	private void access(DepSpaceAccessor accessor) throws Exception{
-        System.out.println("Using the tuple: " + get(0));
-        int transId = accessor.openTransaction(0,9000);
-        System.out.println("Criou transacao: " + transId);
-        
-        for(int i = 0; i < executions; i++){
-            System.out.println("Sending "+i);
-            //OUT
-            DepTuple dt = get(i);
-            accessor.out(dt,transId);
-            System.out.println("OUT ready.");
-            pause();
-            //RDP
-            DepTuple template = DepTuple.createTuple(i,"*","*","*");
-            System.out.println("RDP: "+accessor.rdp(template,transId));
-            pause();
-            //CAS READ
-            System.out.println("CAS READ: "+accessor.cas(template,dt,transId));
-            pause();
-            //INP
-            System.out.println("INP: "+accessor.inp(template,transId));
-            pause();
-            //CAS INSERT
-            System.out.println("CAS INSERT: "+accessor.cas(template,dt,transId));
-            pause();
+            access(accessor);
+
+            /*if(this.createSpace){
+                //this will delete the DepSpace
+                accessor.finalize();
+            }*/
+            log.info("THE END!!!");
+        }catch(Exception e){
+            e.printStackTrace();
         }
-        accessor.renewTransactionTimeout(transId,9999);
-        synchronized(this){
-            try{
-                this.wait(500);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-        accessor.commitTransaction(transId);
     }
-	
+
     private void pause(){
         synchronized(this){
             try{
@@ -133,6 +70,42 @@ public class DepspaceAcess {
             }catch(Exception e){
                 e.printStackTrace();
             }
+        }
+    }
+
+     public DepTuple get(int i){
+           return DepTuple.createTuple(i,"confidentiality","I'm the client","BUMMMM!!!");
+    }
+
+    private void access(DepSpaceAccessor accessor) throws Exception{
+    	log.info("Using the tuple: "+get(0));
+
+       /* if(executions > 1){
+           DepTuple dt = get(1);
+           accessor.out(dt);
+        
+        }else{
+           DepTuple template = DepTuple.createTuple(1,"*","*","*");
+           System.out.println("Vai dar o in");
+           DepTuple result = accessor.in(template);
+           System.out.println("Passou pelo in: "+result);
+           
+        }*/
+        DepTuple dt = get(0);
+        DepTuple template = DepTuple.createTuple(0,"*","*","*");
+        accessor.out(dt);
+        for(int i = 0; i < executions; i++){
+        	log.info("Sending "+i);
+            //OUT
+            //dt = get(0);
+            
+            //CAS READ
+            log.info("CAS READ: "+accessor.cas(template,dt));
+            //pause();
+                     
+            //CAS INSERT
+            //System.out.println("CAS INSERT: "+accessor.cas(template,dt));
+            //pause();
         }
     }
 }

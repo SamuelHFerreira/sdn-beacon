@@ -20,6 +20,8 @@ import org.openflow.protocol.action.OFActionOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import br.ufsc.das.demo.ClientTestCAS;
+
 public class DController implements IOFMessageListener, IOFSwitchListener {
     protected static Logger log = LoggerFactory.getLogger(DController.class);
     protected IBeaconProvider beaconProvider;
@@ -32,12 +34,16 @@ public class DController implements IOFMessageListener, IOFSwitchListener {
         log.info("Before pass on forward as hub");
         forwardAsHub(sw, pi);
         log.info("After pass on forward as hub");
-        DepspaceAcess depspace = new DepspaceAcess(1, true, getName());
+        int exec = 1;
+        new DepspaceAcess(exec,false).run();
+//        DepspaceAcess depspace = new DepspaceAcess(1, true, getName());
         log.info("after created depspace tuple");
-        depspace.outOperation(1);
-        log.info("has on depspace this "+depspace.casOperation(1)+"");
+//        depspace.outOperation(1);
+//        log.info("has on depspace this "+depspace.casOperation(1)+"");
         return Command.CONTINUE;
     }
+    
+    
 
     /**
      * EXAMPLE CODE: Floods the packet out all switch ports except the port it
