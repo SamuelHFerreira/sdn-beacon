@@ -34,12 +34,12 @@ public class DController implements IOFMessageListener, IOFSwitchListener {
         log.info("Before pass on forward as hub");
         forwardAsHub(sw, pi);
         log.info("After pass on forward as hub");
-        int exec = 1;
-        new DepspaceAcess(exec,false).run();
-//        DepspaceAcess depspace = new DepspaceAcess(1, true, getName());
+        
+        String controllerID = beaconProvider.toString();
+        DepspaceAcess depsAccess = new DepspaceAcess(true,controllerID,0);
+        depsAccess.outOp();
+        depsAccess.casOp();
         log.info("after created depspace tuple");
-//        depspace.outOperation(1);
-//        log.info("has on depspace this "+depspace.casOperation(1)+"");
         return Command.CONTINUE;
     }
     
