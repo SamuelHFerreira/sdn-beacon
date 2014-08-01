@@ -205,11 +205,12 @@ public class LearningSwitchTutorial implements IOFMessageListener, IOFSwitchList
      * @param beaconProvider the beaconProvider to set
      */
     public void setBeaconProvider(IBeaconProvider beaconProvider) {
+    	log.info("setting beacon provider tutorial");
         this.beaconProvider = beaconProvider;
     }
 
     public void startUp() {
-        log.trace("Starting");
+        log.info("Starting tutorial");
         beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.addOFSwitchListener(this);
     }

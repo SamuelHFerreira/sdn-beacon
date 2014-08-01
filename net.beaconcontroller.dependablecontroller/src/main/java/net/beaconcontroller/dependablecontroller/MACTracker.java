@@ -26,6 +26,7 @@ public class MACTracker implements IOFMessageListener {
 	}
 
 	public void setBeaconProvider(IBeaconProvider beaconProvider) {
+		logger.trace("setting beaconProvider");
 		this.beaconProvider = beaconProvider;
 	}
 
@@ -50,6 +51,7 @@ public class MACTracker implements IOFMessageListener {
 	}
 	
 	public void startUp() {
+		logger.trace("Starting Mactracker");
 		beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
 	}
 	

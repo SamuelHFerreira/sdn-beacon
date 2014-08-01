@@ -119,17 +119,18 @@ public class DController implements IOFMessageListener, IOFSwitchListener {
      * @param beaconProvider the beaconProvider to set
      */
     public void setBeaconProvider(IBeaconProvider beaconProvider) {
+    	log.info("setting beaconProvider");
         this.beaconProvider = beaconProvider;
     }
 
     public void startUp() {
-        log.trace("Starting");
+        log.info("Starting");
         beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.addOFSwitchListener(this);
     }
 
     public void shutDown() {
-        log.trace("Stopping");
+        log.info("Stopping");
         beaconProvider.removeOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.removeOFSwitchListener(this);
     }
