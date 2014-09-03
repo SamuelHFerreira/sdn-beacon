@@ -28,8 +28,10 @@ public class VirtualController {
 	public boolean requestRole(ControllerRole role) {
 		// TODO
 		if(brothers!=null && brothers.size()>0) {
-			
+			return false;
 		}
+		return true;
+		// TODO nem sei que fiz aqui
 	}
 	
 	private void askRole() {
