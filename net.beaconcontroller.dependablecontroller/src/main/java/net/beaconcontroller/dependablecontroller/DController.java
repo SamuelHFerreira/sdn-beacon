@@ -3,12 +3,16 @@ package net.beaconcontroller.dependablecontroller;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.beaconcontroller.core.IBeaconProvider;
 import net.beaconcontroller.core.IOFMessageListener;
 import net.beaconcontroller.core.IOFSwitch;
 import net.beaconcontroller.core.IOFSwitchListener;
+import net.beaconcontroller.devicemanager.Device;
+import net.beaconcontroller.devicemanager.IDeviceManagerAware;
 
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
@@ -20,13 +24,13 @@ import org.openflow.protocol.action.OFActionOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.ufsc.das.demo.ClientTestCAS;
-
-public class DController implements IOFMessageListener, IOFSwitchListener {
+public class DController implements IOFMessageListener, IOFSwitchListener, IDeviceManagerAware {
     protected static Logger log = LoggerFactory.getLogger(DController.class);
     protected IBeaconProvider beaconProvider;
     protected Map<IOFSwitch, Map<Long,Short>> macTables =
-        new HashMap<IOFSwitch, Map<Long,Short>>();
+    		  new HashMap<IOFSwitch, Map<Long,Short>>();
+    DepspaceAcess depsAccess;
+    protected List<VirtualController> controllers;
 
     public Command receive(IOFSwitch sw, OFMessage msg) throws IOException {
         initMACTable(sw);
@@ -35,8 +39,6 @@ public class DController implements IOFMessageListener, IOFSwitchListener {
         forwardAsHub(sw, pi);
         log.info("After pass on forward as hub");
         
-        String controllerID = beaconProvider.toString();
-        DepspaceAcess depsAccess = new DepspaceAcess(true,controllerID,0);
         depsAccess.outOp();
         depsAccess.casOp();
         log.info("after created depspace tuple");
@@ -127,6 +129,10 @@ public class DController implements IOFMessageListener, IOFSwitchListener {
         log.info("Starting");
         beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.addOFSwitchListener(this);
+        String controllerID = beaconProvider.toString();
+        depsAccess = new DepspaceAcess(true,controllerID,0);
+        
+        controllers = ControllersInstancer.getVirtualControllers();
     }
 
     public void shutDown() {
@@ -138,4 +144,47 @@ public class DController implements IOFMessageListener, IOFSwitchListener {
     public String getName() {
         return "ControllerSafety";
     }
+
+
+
+	@Override
+	public void deviceAdded(Device device) {
+//		TODO notify the dependable tuples
+		
+	}
+
+
+
+	@Override
+	public void deviceRemoved(Device device) {
+//		TODO notify the dependable tuples
+		
+	}
+
+
+
+	@Override
+	public void deviceMoved(Device device, IOFSwitch oldSw, Short oldPort,
+			IOFSwitch sw, Short port) {
+		// TODO notify the dependable tuples
+		
+	}
+
+
+
+	@Override
+	public void deviceNetworkAddressAdded(Device device,
+			Set<Integer> networkAddresses, Integer networkAddress) {
+//		TODO notify the dependable tuples
+		
+	}
+
+
+
+	@Override
+	public void deviceNetworkAddressRemoved(Device device,
+			Set<Integer> networkAddresses, Integer networkAddress) {
+		// TODO notify the dependable tuples
+		
+	}
 }
