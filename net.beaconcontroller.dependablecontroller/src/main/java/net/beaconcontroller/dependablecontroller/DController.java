@@ -110,11 +110,15 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 
     @Override
     public void addedSwitch(IOFSwitch sw) {
+    	log.info("Added switch: "+sw.getId());
+    	//TODO treats of tuplespace
     }
 
     @Override
     public void removedSwitch(IOFSwitch sw) {
         macTables.remove(sw);
+        log.info("removed switch: "+sw.getId());
+        //TODO treats of tuplespace
     }
 
     /**
@@ -130,6 +134,7 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
         beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.addOFSwitchListener(this);
         String controllerID = beaconProvider.toString();
+        log.info("ControllerID: "+controllerID);
         depsAccess = new DepspaceAcess(true,controllerID,0);
         
         controllers = ControllersInstancer.getVirtualControllers();
@@ -150,6 +155,10 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 	@Override
 	public void deviceAdded(Device device) {
 //		TODO notify the dependable tuples
+//		log.info("deviceAdded:"+device.get);
+		log.info("Added device: "+device.getSw().getId()+"|"+device.getDataLayerAddress().toString());
+        beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
+        beaconProvider.addOFSwitchListener(this);
 		
 	}
 
@@ -157,6 +166,7 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 
 	@Override
 	public void deviceRemoved(Device device) {
+		log.info("removed device: "+device.getSw().getId()+"|"+device.getDataLayerAddress().toString());
 //		TODO notify the dependable tuples
 		
 	}
