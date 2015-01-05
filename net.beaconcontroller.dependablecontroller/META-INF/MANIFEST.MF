@@ -4,12 +4,18 @@ Bundle-Name: net.beaconcontroller.dependablecontroller
 Bundle-SymbolicName: net.beaconcontroller.dependablecontroller
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: br.ufsc.das.client,
+Import-Package: 
+ br.ufsc.das.client,
  br.ufsc.das.general,
  br.ufsc.das.util,
  net.beaconcontroller.core,
  net.beaconcontroller.core.io,
+ net.beaconcontroller.devicemanager,
  net.beaconcontroller.packet,
+ net.neoremind.sshxcute.core,
+ net.neoremind.sshxcute.exception,
+ net.neoremind.sshxcute.task,
+ net.neoremind.sshxcute.task.impl,
  org.openflow.io;version="1.0.2",
  org.openflow.protocol;version="1.0.2",
  org.openflow.protocol.action;version="1.0.2",

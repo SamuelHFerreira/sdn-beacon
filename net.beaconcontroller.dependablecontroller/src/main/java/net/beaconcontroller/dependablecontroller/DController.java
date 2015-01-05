@@ -112,8 +112,10 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
     public void addedSwitch(IOFSwitch sw) {
     	log.info("Added switch: "+sw.getId());
     	//TODO treats of tuplespace
+//    	executeCommand("ssh openflow");
+    	
     }
-
+    
     @Override
     public void removedSwitch(IOFSwitch sw) {
         macTables.remove(sw);
@@ -134,6 +136,8 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
         beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.addOFSwitchListener(this);
         String controllerID = beaconProvider.toString();
+        MininetAccess mnAccesss = new MininetAccess("192.168.56.101", "openflow", "openflow");
+        mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 0 10.10.1.91");
         log.info("ControllerID: "+controllerID);
         depsAccess = new DepspaceAcess(true,controllerID,0);
         
