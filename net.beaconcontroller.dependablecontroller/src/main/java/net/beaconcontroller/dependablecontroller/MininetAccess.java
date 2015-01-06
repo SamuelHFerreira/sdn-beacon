@@ -28,19 +28,10 @@ public class MininetAccess {
 			// Initialize a ConnBean object, parameter list is ip, username,
 			// password
 			ConnBean cb = new ConnBean(address, username, password);
-			// Put the ConnBean instance as parameter for SSHExec static method
-			// getInstance(ConnBean) to retrieve a real SSHExec instance
 			ssh = SSHExec.getInstance(cb);
-			// Create a ExecCommand, the reference class must be CustomTask
 			CustomTask ct1 = new ExecCommand(command);
-			// CustomTask ct2 = new
-			// ExecShellScript("/home/tsadmin","./sshxcute_test.sh","hello world");
 			// Connect to server
 			ssh.connect();
-			// Upload sshxcute_test.sh to /home/tsadmin on remote system
-			// ssh.uploadSingleDataToServer("data/sshxcute_test.sh",
-			// "/home/tsadmin");
-			// Execute task and get the returned Result object
 			Result res = ssh.exec(ct1);
 			// Check result and print out messages.
 			if (res.isSuccess) {
@@ -60,5 +51,4 @@ public class MininetAccess {
 			ssh.disconnect();
 		}
 	}
-
 }

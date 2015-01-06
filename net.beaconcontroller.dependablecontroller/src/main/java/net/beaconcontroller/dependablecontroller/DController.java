@@ -31,17 +31,36 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
     		  new HashMap<IOFSwitch, Map<Long,Short>>();
     DepspaceAcess depsAccess;
     protected List<VirtualController> controllers;
+    protected Integer switchOrderer;
+    
+    public void startUp() {
+        log.info("Starting");
+        beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
+        beaconProvider.addOFSwitchListener(this);
+        String controllerID = beaconProvider.toString();
+        MininetAccess mnAccesss = new MininetAccess("192.168.56.101", "openflow", "openflow");
+        mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 1 10.10.1.91");
+        mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 2 10.10.1.91");
+        mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 3 10.10.1.91");
+        
+        // Criando controllers virtuais para teste
+        controllers = ControllersInstancer.createVirtualControllers();
+        switchOrderer = 0;
+        log.info("ControllerID: "+controllerID);
+        depsAccess = new DepspaceAcess(true,controllerID,0);
+        
+//        controllers = ControllersInstancer.createVirtualControllers();
+    }
 
     public Command receive(IOFSwitch sw, OFMessage msg) throws IOException {
         initMACTable(sw);
         OFPacketIn pi = (OFPacketIn) msg;
-        log.info("Before pass on forward as hub");
-        forwardAsHub(sw, pi);
-        log.info("After pass on forward as hub");
-        
-        depsAccess.outOp();
-        depsAccess.casOp();
-        log.info("after created depspace tuple");
+        log.info("Recebendo mensagem, vai repassar como hub");
+//        forwardAsHub(sw, pi);
+        log.info("Enviou mensagem como hub");
+//        depsAccess.outOp();
+//        depsAccess.casOp();
+//        log.info("after created depspace tuple");
         return Command.CONTINUE;
     }
     
@@ -56,7 +75,6 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
      * @throws IOException
      */
     public void forwardAsHub(IOFSwitch sw, OFPacketIn pi) throws IOException {
-        // Create the OFPacketOut OpenFlow object
         OFPacketOut po = new OFPacketOut();
 
         // Create an output action to flood the packet, put it in the OFPacketOut
@@ -80,21 +98,6 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
         sw.getOutputStream().write(po);
     }
 
-    /**
-     * TODO: Learn the source MAC:port pair for each arriving packet. Next send
-     * the packet out the port previously learned for the destination MAC, if it
-     * exists. Otherwise flood the packet similarly to forwardAsHub.
-     *
-     * @param sw the OpenFlow switch object
-     * @param pi the OpenFlow Packet In object
-     * @throws IOException
-     */
-    public void forwardAsLearningSwitch(IOFSwitch sw, OFPacketIn pi) throws IOException {
-        Map<Long,Short> macTable = macTables.get(sw);
-       
-    }
-
-    // ---------- NO NEED TO EDIT ANYTHING BELOW THIS LINE ----------
 
     /**
      * Ensure there is a MAC to port table per switch
@@ -110,8 +113,21 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 
     @Override
     public void addedSwitch(IOFSwitch sw) {
-    	log.info("Added switch: "+sw.getId());
+    	try {
+//    		log.info("size of controllers:"+controllers.size() +" switch orderer:"+switchOrderer);
+    		controllers.get(switchOrderer);
+//    		controllers.get(switchOrderer).getSwitches().add(sw);
+    		
+			log.info("Added switch: "+sw.getId()+" state:"+sw.getState() +
+					 " remote addresss:"+sw.getSocketChannel().getRemoteAddress().toString()+"to the controller:"+controllers.get(switchOrderer).getId());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	switchOrderer++;
     	//TODO treats of tuplespace
+//    	log.info("adding swich:"+sw.getId()+" info into tuplespace");
+//		depsAccess.outOp();
+//	    depsAccess.casOp();
 //    	executeCommand("ssh openflow");
     	
     }
@@ -129,19 +145,6 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
     public void setBeaconProvider(IBeaconProvider beaconProvider) {
     	log.info("setting beaconProvider");
         this.beaconProvider = beaconProvider;
-    }
-
-    public void startUp() {
-        log.info("Starting");
-        beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
-        beaconProvider.addOFSwitchListener(this);
-        String controllerID = beaconProvider.toString();
-        MininetAccess mnAccesss = new MininetAccess("192.168.56.101", "openflow", "openflow");
-        mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 0 10.10.1.91");
-        log.info("ControllerID: "+controllerID);
-        depsAccess = new DepspaceAcess(true,controllerID,0);
-        
-        controllers = ControllersInstancer.getVirtualControllers();
     }
 
     public void shutDown() {
