@@ -3,6 +3,8 @@ package net.beaconcontroller.dependablecontroller;
 import static br.ufsc.das.util.TSUtil.CONFIG_HOME;
 import static br.ufsc.das.util.TSUtil.DPS_NAME;
 import static br.ufsc.das.util.TSUtil.DPS_CONFIDEALITY;
+import static br.ufsc.das.util.TSUtil.DPS_SUPPORT_TRANSACTION;
+
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -24,18 +26,20 @@ public class DepspaceAcess {
     public DepspaceAcess(boolean createSpace,String controllerId, int groupId) {
         prop = new Properties();
         //setting config home.
-        prop.put(CONFIG_HOME,"C:\\Documentos\\git\\tcc-code\\net.beaconcontroller.dependablecontroller\\config");
+        prop.put(CONFIG_HOME,"/media/Arquivos principais/Meus DOCS/Facul/9º período/TCC2/WorkspaceLinux/beacon-tutorial-1.0.2/src/beacon-1.0.2/net.beaconcontroller.dependablecontroller/config");
+//        prop.put(CONFIG_HOME,"C:\\Documentos\\git\\tcc-code\\net.beaconcontroller.dependablecontroller\\config");
         //the DepSpace name
         log.info("Creating Tuple: "+controllerId);
         prop.put(DPS_NAME,controllerId);
+        prop.put(DPS_SUPPORT_TRANSACTION,"true");
         // TODO primeiro campo vai ser o groupID
         template = DepTuple.createTuple(groupId,"*","*","*");
         //the DepSpace Accessor, who will access the DepSpace.
         log.info("Created Tuple groupId: "+groupId);
         try{
         	if(createSpace){
-        		log.info("Creating Tuple space with problem =s");
         		DepSpaceAdmin admin = new DepSpaceAdmin();
+        		log.info("Creating Tuple space with problem =s");
         		accessor = admin.createSpace(prop);
         		log.info("Created Tuple space");
         	}else{
