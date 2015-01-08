@@ -8,6 +8,7 @@ import net.beaconcontroller.core.IOFSwitch;
 public class VirtualController {
 	private Long id;
 	private ControllerRole role;
+
 	private ControllerStatus status;
 	private List<IOFSwitch> switches;
 	
@@ -22,7 +23,7 @@ public class VirtualController {
 			role = ControllerRole.ROLE_EQUAL;
 		}
 		status = ControllerStatus.ONLINE; 
-		List<IOFSwitch> switches = new ArrayList<IOFSwitch>();
+		switches = new ArrayList<IOFSwitch>();
 	}
 	
 	public boolean turnOff() {
@@ -37,6 +38,7 @@ public class VirtualController {
 	public boolean turnOn() {
 		if(status.equals(ControllerStatus.OFFLINE)) {
 			status = ControllerStatus.ONLINE;
+			changeRole(ControllerRole.ROLE_EQUAL);
 			return true;
 		} else {
 			return false;
@@ -81,5 +83,20 @@ public class VirtualController {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	public ControllerRole getRole() {
+		return role;
+	}
+	
+	public void setRole(ControllerRole role) {
+		this.role = role;
+	}
+
+	public ControllerStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(ControllerStatus status) {
+		this.status = status;
 	}
 }

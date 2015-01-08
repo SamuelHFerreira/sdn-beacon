@@ -30,24 +30,24 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
     protected Map<IOFSwitch, Map<Long,Short>> macTables =
     		  new HashMap<IOFSwitch, Map<Long,Short>>();
     DepspaceAcess depsAccess;
-    protected List<VirtualController> controllers;
     protected Integer switchOrderer;
+    protected MininetAccess mnAccesss;
     
     public void startUp() {
         log.info("Starting");
         beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.addOFSwitchListener(this);
-        String controllerID = beaconProvider.toString();
-        MininetAccess mnAccesss = new MininetAccess("192.168.56.101", "openflow", "openflow");
+        String mainControllerID = beaconProvider.toString();
+        mnAccesss = new MininetAccess("192.168.56.101", "openflow", "openflow");
         mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 1 10.10.1.91");
         mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 2 10.10.1.91");
         mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh 3 10.10.1.91");
         
         // Criando controllers virtuais para teste
-        controllers = ControllersInstancer.createVirtualControllers();
+        ControllersInstancer.createVirtualControllers();
         switchOrderer = 0;
-        log.info("ControllerID: "+controllerID);
-        depsAccess = new DepspaceAcess(true,controllerID,0);
+        log.info("ControllerID: "+mainControllerID);
+        depsAccess = new DepspaceAcess(true,mainControllerID,0);
         
 //        controllers = ControllersInstancer.createVirtualControllers();
     }
@@ -56,7 +56,7 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
         initMACTable(sw);
         OFPacketIn pi = (OFPacketIn) msg;
         log.info("Recebendo mensagem, vai repassar como hub");
-//        forwardAsHub(sw, pi);
+        forwardAsHub(sw, pi);
         log.info("Enviou mensagem como hub");
 //        depsAccess.outOp();
 //        depsAccess.casOp();
@@ -113,24 +113,56 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 
     @Override
     public void addedSwitch(IOFSwitch sw) {
-    	try {
-//    		log.info("size of controllers:"+controllers.size() +" switch orderer:"+switchOrderer);
-    		controllers.get(switchOrderer);
-//    		controllers.get(switchOrderer).getSwitches().add(sw);
+    	
+    	
+    	
+    	simulationMode(sw);
+    }
+
+	private void simulationMode(IOFSwitch sw) {
+		try {
+    		log.info("size of controllers:"+ControllersInstancer.getVirtualControllers().size() +" switch orderer:"+switchOrderer);
+    		if(ControllersInstancer.getVirtualControllers().get(switchOrderer).getSwitches() != null) {
+    			log.info("adding swich:"+sw.getSocketChannel().getRemoteAddress().toString() +" to the controller:"+ControllersInstancer.getVirtualControllers().get(switchOrderer).getId());
+    			ControllersInstancer.getVirtualControllers().get(switchOrderer).getSwitches().add(sw);
+    			depsAccess.outOp(ControllersInstancer.getVirtualControllers().get(switchOrderer).getId().intValue(), sw.getSocketChannel().getRemoteAddress().toString(), System.currentTimeMillis()+"", 
+    					ControllersInstancer.getMasterController() != null ? ControllersInstancer.getMasterController().getId()+""  : "");
+    		}
     		
 			log.info("Added switch: "+sw.getId()+" state:"+sw.getState() +
-					 " remote addresss:"+sw.getSocketChannel().getRemoteAddress().toString()+"to the controller:"+controllers.get(switchOrderer).getId());
+					 " remote addresss:"+sw.getSocketChannel().getRemoteAddress().toString()+"to the controller:"+ControllersInstancer.getVirtualControllers().get(switchOrderer).getId());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
     	switchOrderer++;
-    	//TODO treats of tuplespace
-//    	log.info("adding swich:"+sw.getId()+" info into tuplespace");
-//		depsAccess.outOp();
-//	    depsAccess.casOp();
-//    	executeCommand("ssh openflow");
-    	
-    }
+    	// TODO tretas do sleep e exit nas topologias
+    	if((switchOrderer+1) == ControllersInstancer.getVirtualControllers().size()) {
+    		log.info("case thread sleep");
+    		try {
+    		    Thread.sleep(100);
+    		} catch(InterruptedException ex) {
+    		    Thread.currentThread().interrupt();
+    		}
+    		// starts to simulate the breakdown of a virtual controller
+    		// breakdown the masterController (0)
+    		// TODO pegar switches do depspace
+    		log.info("reakdown the masterController");
+    		int oldMasterControllerId = 0;
+    		List<IOFSwitch> switches = ControllersInstancer.getVirtualControllers().get(oldMasterControllerId).getSwitches();
+    		ControllersInstancer.getVirtualControllers().get(0).turnOff();
+    		VirtualController newMasterController = null;
+    		if(ControllersInstancer.getMasterController() == null) {
+    			newMasterController = ControllersInstancer.chooseNewMaster();
+    			newMasterController.getSwitches().addAll(ControllersInstancer.getVirtualControllers().get(oldMasterControllerId).getSwitches());
+    		}
+    		// atribui o switch a um novo controller
+    		log.info("reakdown the masterController script");
+    		if (newMasterController != null) {
+    		mnAccesss.executeCommand("sh /home/openflow/scripts/breakdownSwitch.sh "+ControllersInstancer.getVirtualControllers().get(oldMasterControllerId).getId());
+    			mnAccesss.executeCommand("sh /home/openflow/scripts/makeTopologies.sh "+newMasterController.getId()+" 10.10.1.91");
+    		}
+    	}
+	}
     
     @Override
     public void removedSwitch(IOFSwitch sw) {
