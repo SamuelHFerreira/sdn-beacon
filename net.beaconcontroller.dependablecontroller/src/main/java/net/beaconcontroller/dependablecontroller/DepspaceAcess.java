@@ -123,13 +123,16 @@ public class DepspaceAcess {
 	 * 
 	 * @param tupleId
 	 */
-	public void rdpOp(int tupleId) {
+	public DepTuple rdpOp(int tupleId) {
+		DepTuple result = null;
 		try {
 			DepTuple template = createBasicTemplate(tupleId);
-			log.info("RDP operation: " + accessor.rdp(template));
+			result = accessor.rdp(template);
+			log.info("RDP operation: " + result);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return result;
 	}
 
 	/**
@@ -176,5 +179,13 @@ public class DepspaceAcess {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
 }

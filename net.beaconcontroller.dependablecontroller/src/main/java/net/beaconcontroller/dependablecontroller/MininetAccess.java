@@ -15,6 +15,11 @@ public class MininetAccess {
 //	Script
 //	#!/bin/bash
 //	screen -S mini$1 -p 0 -X stuff "sudo mn --topo single,3 --mac --switch ovsk --controller remote --ip $2 $(printf \\r)"
+	
+//	breakdown switchMN
+//	#!/bin/bash
+//	screen -S mini$1 -p 0 -X stuff "exit $(printf \\r)"
+
 
 	public MininetAccess(String address, String username, String password) {
 		this.address = address;
