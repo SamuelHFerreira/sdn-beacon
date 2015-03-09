@@ -25,10 +25,10 @@ public class DepspaceAcess {
 	public DepspaceAcess(boolean createSpace, String controllerId, int groupId) {
 		prop = new Properties();
 		// setting config home.
-		// prop.put(CONFIG_HOME,"/media/Arquivos principais/Meus DOCS/Facul/9Âº perÃ­odo/TCC2/WorkspaceLinux/beacon-tutorial-1.0.2/src/beacon-1.0.2/net.beaconcontroller.dependablecontroller/config");
+		 prop.put(CONFIG_HOME,"/media/Arquivos principais/Meus DOCS/Facul/9Âº perÃ­odo/TCC2/WorkspaceLinux/beacon-tutorial-1.0.2/src/beacon-1.0.2/net.beaconcontroller.dependablecontroller/config");
 		// prop.put(CONFIG_HOME,"C:\\Documentos\\Outrascoisas\\Facul\\TCC\\depspace-0.2\\config");
-		prop.put(CONFIG_HOME,
-				"C:/Documentos/Outrascoisas/Facul/TCC/depspace-0.2/config");
+//		prop.put(CONFIG_HOME,
+//				"C:/Documentos/Outrascoisas/Facul/TCC/depspace-0.2/config");
 		// the DepSpace name
 		log.info("Creating Tuple: " + controllerId);
 		prop.put(DPS_NAME, controllerId);
@@ -97,7 +97,7 @@ public class DepspaceAcess {
 	}
 
 	/**
-	 * Se não tiver o template com o tupleId, insere a tupla com tupleId e os
+	 * Se nï¿½o tiver o template com o tupleId, insere a tupla com tupleId e os
 	 * campos fieldOne, fieldTwo e fieldThree
 	 * 
 	 * @param tupleId
@@ -119,7 +119,7 @@ public class DepspaceAcess {
 
 	/**
 	 * Le tupla que combina com o template (tupleId,"*","*","*") e 'retorna true
-	 * se tiver encontrado pra leitura, e false caso não tenha encontrado'"
+	 * se tiver encontrado pra leitura, e false caso nï¿½o tenha encontrado'"
 	 * 
 	 * @param tupleId
 	 */
@@ -137,7 +137,7 @@ public class DepspaceAcess {
 
 	/**
 	 * Le tupla que combina com o template (tupleId,"*","*","*") e a remove,
-	 * 'retorna true se tiver encontrado pra leitura, e false caso não tenha
+	 * 'retorna true se tiver encontrado pra leitura, e false caso nï¿½o tenha
 	 * encontrado'"
 	 * 
 	 * @param tupleId
@@ -153,7 +153,7 @@ public class DepspaceAcess {
 
 	/**
 	 * Le tupla que combina com o template (tupleId,"*","*","*") e , processo
-	 * que se mantém bloqueado até que se encontre a tupla"
+	 * que se mantï¿½m bloqueado atï¿½ que se encontre a tupla"
 	 * 
 	 * @param tupleId
 	 */
@@ -168,7 +168,7 @@ public class DepspaceAcess {
 
 	/**
 	 * Le tupla que combina com o template (tupleId,"*","*","*") e a remove,
-	 * processo que se mantém bloqueado até que se encontre a tupla"
+	 * processo que se mantï¿½m bloqueado atï¿½ que se encontre a tupla"
 	 * 
 	 * @param tupleId
 	 */

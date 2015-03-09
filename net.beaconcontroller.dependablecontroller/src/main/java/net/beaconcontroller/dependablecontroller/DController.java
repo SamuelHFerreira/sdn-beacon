@@ -49,20 +49,20 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
        
         
         log.info("ControllerID: "+thisControllerId);
-        depsAccess = new DepspaceAcess(true,thisControllerId,0);
+//        depsAccess = new DepspaceAcess(true,thisControllerId,0);
         // TODO rotina de recuperacao do anterior
-        DepTuple resultRead =  depsAccess.rdpOp(Integer.valueOf(thisControllerId));
-        if(resultRead != null) {
-        	log.info("li um objeto da tuplespace: "+resultRead);
+//        DepTuple resultRead =  depsAccess.rdpOp(Integer.valueOf(thisControllerId));
+//        if(resultRead != null) {
+//        	log.info("li um objeto da tuplespace: "+resultRead);
 //        	mnAccesss.executeCommand("sh /home/openflow/scripts/breakdownSwitch.sh "+thisControllerId);
 //			mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh "+thisControllerId+" 200.131.206.168");
 //        	
-        } else {
-        	log.info("nao encontrei nada na tuplespace iniciar 1 por 1"+resultRead);
+//        } else {
+//        	log.info("nao encontrei nada na tuplespace iniciar 1 por 1"+resultRead);
 //        	mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh 1 200.131.206.168");
 //	        mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh 2 200.131.206.168");
 //	        mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh 3 200.131.206.168");
-        }
+//        }
         // Criando controllers virtuais para teste
         ControllersInstancer.createVirtualControllers();
         switchOrderer = 0;
