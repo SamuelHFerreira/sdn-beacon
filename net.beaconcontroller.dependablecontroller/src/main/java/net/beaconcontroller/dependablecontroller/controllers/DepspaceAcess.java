@@ -1,4 +1,4 @@
-package net.beaconcontroller.dependablecontroller;
+package net.beaconcontroller.dependablecontroller.controllers;
 
 import static br.ufsc.das.util.TSUtil.CONFIG_HOME;
 import static br.ufsc.das.util.TSUtil.DPS_NAME;
@@ -6,6 +6,8 @@ import static br.ufsc.das.util.TSUtil.DPS_CONFIDEALITY;
 import static br.ufsc.das.util.TSUtil.DPS_SUPPORT_TRANSACTION;
 
 import java.util.Properties;
+
+import net.beaconcontroller.dependablecontroller.DController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,24 +73,24 @@ public class DepspaceAcess {
 
 	private DepTuple getBasicTuple(int i) {
 		return DepTuple.createTuple(i, "OpenFlowLeader", "I'm the leader",
-				"BUMMMM!!!");
+				"BUMMMM!!!","boom 2");
 	}
 
 	private DepTuple createBasicTemplate(int i) {
-		return DepTuple.createTuple(i, "*", "*", "*");
+		return DepTuple.createTuple(i, "*", "*", "*","*");
 	}
 
 	public DepTuple getPatternTuple(String firstField, String secondField,
-			String thirdField) {
+			String thirdField, String fourthyField) {
 		return DepTuple.createTuple(this.groupId, firstField, secondField,
-				thirdField);
+				thirdField, fourthyField);
 	}
 
 	public void outOp(int tupleId, String fieldOne, String fieldTwo,
-			String fieldThree) {
+			String fieldThree, String fieldFour) {
 		try {
 			DepTuple dt = DepTuple.createTuple(tupleId, fieldOne, fieldTwo,
-					fieldThree);
+					fieldThree, fieldFour);
 			log.info("OUT operation: " + dt);
 			accessor.out(dt);
 		} catch (Exception e) {
@@ -104,13 +106,14 @@ public class DepspaceAcess {
 	 * @param fieldOne
 	 * @param fieldTwo
 	 * @param fieldThree
+	 * @param fieldFour
 	 */
 	public void casOp(int tupleId, String fieldOne, String fieldTwo,
-			String fieldThree) {
+			String fieldThree, String fieldFour) {
 		try {
 			DepTuple template = createBasicTemplate(tupleId);
 			DepTuple dt = DepTuple.createTuple(tupleId, fieldOne, fieldTwo,
-					fieldThree);
+					fieldThree, fieldFour);
 			log.info("CAS operation: " + accessor.cas(template, dt));
 		} catch (Exception e) {
 			e.printStackTrace();

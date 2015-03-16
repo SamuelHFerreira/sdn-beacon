@@ -1,4 +1,4 @@
-package net.beaconcontroller.dependablecontroller;
+package net.beaconcontroller.dependablecontroller.controllers;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

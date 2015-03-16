@@ -4,5 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="lib" path="/Depspace/dist/depspace.jar"/>
+	<classpathentry kind="lib" path="/media/Arquivos principais/Meus DOCS/Facul/9º período/TCC2/WorkspaceLinux/beacon-tutorial-1.0.2/src/beacon-1.0.2/libs/plugins/jackson-mapper-asl_1.6.1.jar"/>
+	<classpathentry kind="lib" path="/media/Arquivos principais/Meus DOCS/Facul/9º período/TCC2/WorkspaceLinux/beacon-tutorial-1.0.2/src/beacon-1.0.2/libs/plugins/jackson-core-asl_1.6.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

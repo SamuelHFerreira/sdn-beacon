@@ -1,7 +1,6 @@
 package net.beaconcontroller.dependablecontroller;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,10 +11,20 @@ import net.beaconcontroller.core.IBeaconProvider;
 import net.beaconcontroller.core.IOFMessageListener;
 import net.beaconcontroller.core.IOFSwitch;
 import net.beaconcontroller.core.IOFSwitchListener;
+import net.beaconcontroller.dependablecontroller.controllers.DepspaceAcess;
+import net.beaconcontroller.dependablecontroller.controllers.MininetAccess;
+import net.beaconcontroller.dependablecontroller.data.RouteMap;
+import net.beaconcontroller.dependablecontroller.simulation.ControllersInstancer;
 import net.beaconcontroller.devicemanager.Device;
 import net.beaconcontroller.devicemanager.IDeviceManagerAware;
 import net.beaconcontroller.packet.Ethernet;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
+import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
@@ -35,66 +44,106 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
     protected Map<IOFSwitch, Map<Long,Short>> macTables =
     		  new HashMap<IOFSwitch, Map<Long,Short>>();
     DepspaceAcess depsAccess;
-    protected Integer switchOrderer;
     protected MininetAccess mnAccesss;
+    
     protected String thisControllerId;
+    protected String mode;
     
     public void startUp() {
         log.info("Starting");
+        mode = "learningSwitch";
+        
         beaconProvider.addOFMessageListener(OFType.PACKET_IN, this);
         beaconProvider.addOFSwitchListener(this);
 //        thisControllerId = beaconProvider.toString();
         thisControllerId = "0";
 //        mnAccesss = new MininetAccess("192.168.56.101", "openflow", "openflow");
        
-        
         log.info("ControllerID: "+thisControllerId);
-//        depsAccess = new DepspaceAcess(true,thisControllerId,0);
+        depsAccess = new DepspaceAcess(true,thisControllerId,0);
         // TODO rotina de recuperacao do anterior
-//        DepTuple resultRead =  depsAccess.rdpOp(Integer.valueOf(thisControllerId));
-//        if(resultRead != null) {
-//        	log.info("li um objeto da tuplespace: "+resultRead);
+        DepTuple resultRead =  depsAccess.rdpOp(Integer.valueOf(thisControllerId));
+        if(resultRead != null) {
+        	log.info("li um objeto da tuplespace: "+resultRead);
+        	
+        	Object[] fields = resultRead.getFields();
+        	String RouteMapObject = (String) fields[4];
+        	RouteMap routeMap = readJson(RouteMapObject);
 //        	mnAccesss.executeCommand("sh /home/openflow/scripts/breakdownSwitch.sh "+thisControllerId);
 //			mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh "+thisControllerId+" 200.131.206.168");
-//        	
-//        } else {
-//        	log.info("nao encontrei nada na tuplespace iniciar 1 por 1"+resultRead);
+        } else {
+        	log.info("nao encontrei nada na tuplespace"+resultRead);
+        	
+        	Map<String, Map<Long,Short>> macTablesReplica = new HashMap<String, Map<Long,Short>>();
+        	Map<Long,Short> mapTest = new HashMap<Long,Short>();
+        	mapTest.put(9l, (short)5);
+        	macTablesReplica.put("chave1", mapTest);
+        	RouteMap routeMap = new RouteMap();
+        	routeMap.setMacTablesReplica(macTablesReplica);
+        	String routeMapJson = writeJson(routeMap);
+        	
+        	log.info("inserindo routeMapJson"+routeMapJson);
+        	
+        	depsAccess.outOp(0,"endereço", "tempo", "masterId", routeMapJson);
+        	
 //        	mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh 1 200.131.206.168");
 //	        mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh 2 200.131.206.168");
 //	        mnAccesss.executeCommand("sh /home/openflow/scripts/createTopology.sh 3 200.131.206.168");
-//        }
+        }
         // Criando controllers virtuais para teste
-        ControllersInstancer.createVirtualControllers();
-        switchOrderer = 0;
+    }
+    
+    private String writeJson(RouteMap routes) {
+    	ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    	String json = "";
+		try {
+			json = ow.writeValueAsString(routes);
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	log.info("json obtido do objeto " + json);
+    	return json;
+    }
+    
+    private RouteMap readJson(String json) {
+    	RouteMap ob =  null;
+    	try {
+    		ob = new ObjectMapper().readValue(json, RouteMap.class);
+    	} catch (JsonParseException e) {
+    		e.printStackTrace();
+    	} catch (JsonMappingException e) {
+    		e.printStackTrace();
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    	return ob;
+    	
     }
 
     public Command receive(IOFSwitch sw, OFMessage msg) throws IOException {
-        if(ControllersInstancer.getVirtualControllers().get(0).getStatus().equals(ControllerStatus.ONLINE)) {
-        	initMACTable(sw);
-        	OFPacketIn pi = (OFPacketIn) msg;
+    	initMACTable(sw);
+    	OFPacketIn pi = (OFPacketIn) msg;
+        if(!"learningSwitch".equalsIgnoreCase(mode)) {
         	log.info("Recebendo mensagem, vai repassar como hub:"+msg.toString());
         	forwardAsHub(sw, pi);
         	log.info("Enviou mensagem como hub");
 //        log.info("after created depspace tuple");
-        	return Command.CONTINUE;
         } else {
-//    		try {
-//			    Thread.sleep(1000);
-//			} catch(InterruptedException ex) {
-//			    Thread.currentThread().interrupt();
-//			}
-        	log.info("vai recuperar o controller da tuplespace");
-        	DepTuple tupla = depsAccess.rdpOp(ControllersInstancer.getVirtualControllers().get(0).getId().intValue());
-        	log.info("Campos obtidos");
-        	for(Object object : tupla.getFields()){
-        		log.info(object+"");
-        	}
-        	ControllersInstancer.getVirtualControllers().get(0).turnOn();
-        	return Command.STOP;
+        	forwardAsLearningSwitch(sw,pi);
+        	
+//        	log.info("vai recuperar o controller da tuplespace");
+//        	DepTuple tupla = depsAccess.rdpOp(Integer.valueOf(thisControllerId));
+//        	log.info("Campos obtidos");
+//        	for(Object object : tupla.getFields()){
+//        		log.info(object+"");
+//        	}
         }
+        return Command.CONTINUE;
     }
-    
-    
 
     /**
      * EXAMPLE CODE: Floods the packet out all switch ports except the port it
@@ -150,6 +199,62 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 //        }
         sw.getOutputStream().write(po);
     }
+    
+    /**
+     * Learn the source MAC:port pair for each arriving packet, and send packets
+     * out the port previously learned for the destination MAC of the packet,
+     * if it exists.  Otherwise flood the packet similarly to forwardAsHub.
+     * @param sw the OpenFlow switch object
+     * @param pi the OpenFlow Packet In object
+     * @throws IOException
+     */
+    public void forwardAsLearningSwitch(IOFSwitch sw, OFPacketIn pi) throws IOException {
+        Map<Long,Short> macTable = macTables.get(sw);
+
+        // Build the Match
+        OFMatch match = OFMatch.load(pi.getPacketData(), pi.getInPort());
+
+        // Learn the port to reach the packet's source MAC
+        macTable.put(Ethernet.toLong(match.getDataLayerSource()), pi.getInPort());
+
+        // Retrieve the port previously learned for the packet's dest MAC
+        Short outPort = macTable.get(Ethernet.toLong(match.getDataLayerDestination()));
+
+        if (outPort != null) {
+            // Destination port known, push down a flow
+            OFFlowMod fm = new OFFlowMod();
+            fm.setBufferId(pi.getBufferId());
+            // Use the Flow ADD command
+            fm.setCommand(OFFlowMod.OFPFC_ADD);
+            // Time out the flow after 5 seconds if inactivity
+            fm.setIdleTimeout((short) 5);
+            // Match the packet using the match created above
+            fm.setMatch(match);
+            // Send matching packets to outPort
+            OFAction action = new OFActionOutput(outPort);
+            fm.setActions(Collections.singletonList((OFAction)action));
+            // Send this OFFlowMod to the switch
+            sw.getOutputStream().write(fm);
+
+            if (pi.getBufferId() == OFPacketOut.BUFFER_ID_NONE) {
+                /**
+                 * EXTRA CREDIT: This is a corner case, the packet was not
+                 * buffered at the switch so it must be sent as an OFPacketOut
+                 * after sending the OFFlowMod
+                 */
+                OFPacketOut po = new OFPacketOut();
+                action = new OFActionOutput(outPort);
+                po.setActions(Collections.singletonList(action));
+                po.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+                po.setInPort(pi.getInPort());
+                po.setPacketData(pi.getPacketData());
+                sw.getOutputStream().write(po);
+            }
+        } else {
+            // Destination port unknown, flood packet to all ports
+            forwardAsHub(sw, pi);
+        }
+    }
 
 
     /**
@@ -167,9 +272,9 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
     @Override
     public void addedSwitch(IOFSwitch sw) {
     	initMACTable(sw);
-//    	addingSWNormalMode(sw);
+    	addingSWNormalMode(sw);
     	
-    	addingSWSimulationMode(sw);
+//    	addingSWSimulationMode(sw);
     	
     }
 
@@ -178,7 +283,7 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 			log.info("adding swich:"+sw.getSocketChannel().getRemoteAddress().toString());
 			DepTuple resultRead =  depsAccess.rdpOp(Integer.valueOf(thisControllerId));
 	        if(resultRead == null) {
-	        	depsAccess.outOp(Integer.valueOf(depsAccess.getGroupId()), sw.getSocketChannel().getRemoteAddress().toString(), System.currentTimeMillis()+"", depsAccess.getGroupId()+"");
+	        	depsAccess.outOp(Integer.valueOf(depsAccess.getGroupId()), sw.getSocketChannel().getRemoteAddress().toString(), System.currentTimeMillis()+"", depsAccess.getGroupId()+"","");
 	        } else {
 	        	Object[] fields = resultRead.getFields();
 	        	log.info("field[1]" +((String) fields[1]));
@@ -187,7 +292,7 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
 //	        	switchesList[switchesList.length] = "|"+ sw.getSocketChannel().getRemoteAddress().toString();
 	        	String sws = (String) fields[1];
 	        	sws = sws + ","+ sw.getSocketChannel().getRemoteAddress().toString();
-	        	depsAccess.outOp(Integer.valueOf(depsAccess.getGroupId()), sws, System.currentTimeMillis()+"", depsAccess.getGroupId()+"");
+//	        	depsAccess.outOp(Integer.valueOf(depsAccess.getGroupId()), sws, System.currentTimeMillis()+"", depsAccess.getGroupId()+"","");
 	        }
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -204,7 +309,7 @@ public class DController implements IOFMessageListener, IOFSwitchListener, IDevi
     			ControllersInstancer.getVirtualControllers().get(0).getSwitches().add(sw);
     			log.info("saving this reference into the Depspace Tuple");
     			depsAccess.outOp(ControllersInstancer.getVirtualControllers().get(0).getId().intValue(), sw.getSocketChannel().getRemoteAddress().toString(), System.currentTimeMillis()+"", 
-    					ControllersInstancer.getMasterController() != null ? ControllersInstancer.getMasterController().getId()+""  : "");
+    					ControllersInstancer.getMasterController() != null ? ControllersInstancer.getMasterController().getId()+""  : "", "");
     		}
     		
 			log.info("Added switch: "+sw.getId()+" state:"+sw.getState() +

@@ -23,3 +23,5 @@ Import-Package:
  org.openflow.protocol.statistics;version="1.0.2",
  org.openflow.util;version="1.0.2",
  org.slf4j
+Require-Bundle: jackson-mapper-asl,
+ jackson-core-asl;bundle-version="1.6.1"

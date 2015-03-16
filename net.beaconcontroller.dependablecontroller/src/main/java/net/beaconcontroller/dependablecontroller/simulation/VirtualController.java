@@ -1,9 +1,11 @@
-package net.beaconcontroller.dependablecontroller;
+package net.beaconcontroller.dependablecontroller.simulation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import net.beaconcontroller.core.IOFSwitch;
+import net.beaconcontroller.dependablecontroller.data.ControllerRole;
+import net.beaconcontroller.dependablecontroller.data.ControllerStatus;
 
 public class VirtualController {
 	private Long id;

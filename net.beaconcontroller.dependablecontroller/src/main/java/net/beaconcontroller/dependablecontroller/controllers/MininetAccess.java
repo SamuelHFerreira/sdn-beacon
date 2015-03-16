@@ -1,4 +1,4 @@
-package net.beaconcontroller.dependablecontroller;
+package net.beaconcontroller.dependablecontroller.controllers;
 
 import net.neoremind.sshxcute.core.ConnBean;
 import net.neoremind.sshxcute.core.Result;

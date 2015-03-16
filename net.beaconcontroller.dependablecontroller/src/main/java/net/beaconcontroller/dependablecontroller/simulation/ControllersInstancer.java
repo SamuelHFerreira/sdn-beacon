@@ -1,7 +1,10 @@
-package net.beaconcontroller.dependablecontroller;
+package net.beaconcontroller.dependablecontroller.simulation;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import net.beaconcontroller.dependablecontroller.data.ControllerRole;
+import net.beaconcontroller.dependablecontroller.data.ControllerStatus;
 
 public class ControllersInstancer {
 	private static final int DEFAULT_NUMBER_OF_CONTROLLERS = 3;
@@ -13,7 +16,7 @@ public class ControllersInstancer {
 
 	public static boolean askRole(VirtualController askingController,
 			ControllerRole askingRole) {
-		// TODO regra de atribuição de papéis
+		// TODO regra de atribuiï¿½ï¿½o de papï¿½is
 		return true;
 	}
 
